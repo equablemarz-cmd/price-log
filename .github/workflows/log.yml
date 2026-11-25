@@ -1,0 +1,25 @@
+name: log
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: log
+  cancel-in-progress: false
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record
+        run: python3 log.py
+      - name: Save
+        if: always()
+        run: |
+          git config user.name "price-log"
+          git config user.email "price-log@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || (git commit -q -m "log" && git push -q)
